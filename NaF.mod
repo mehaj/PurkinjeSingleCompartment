@@ -46,6 +46,7 @@ BREAKPOINT {
 UNITSOFF
 
 INITIAL {
+	rates(v)
 	m=minf
 	h=hinf
 }

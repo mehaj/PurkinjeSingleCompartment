@@ -1,4 +1,4 @@
-TITLE slow inactivating voltage gated potassium current
+TITLE Fast inactivating voltage gated potassium current
 
 COMMENT 
 Kinetics adapted from model of Brown et al 2012
@@ -7,7 +7,7 @@ Mammalian model of Purkinje neuron
 ENDCOMMENT
 
 NEURON {
-	SUFFIX Kdr
+	SUFFIX Ka
 	USEION k READ ek WRITE ik 
 	RANGE gkbar, gk, ik, minf, hinf, taum, tauh
 }
@@ -19,7 +19,7 @@ UNITS {
 }
 
 PARAMETER {
-	gkbar= 0.0045 (S/cm2)
+	gkbar= 0.015 (S/cm2)
 	ek=-70 (mV)
 	celsius= 27 (degC)
 }
@@ -38,14 +38,13 @@ STATE { m h}
 
 BREAKPOINT {
 	SOLVE states METHOD cnexp
-	gk=gkbar*m*h
+	gk=gkbar*h*(m^4)
 	ik=gk*(v-ek)
 }
 
 UNITSOFF
 
 INITIAL {
-	rates(v)
 	m=minf
 	h=hinf
 }
@@ -61,14 +60,14 @@ PROCEDURE rates (v) {
 	Q10=3^((celsius - 37)/10)
 
 	:m for activation kinetics
-	alpham = 8.5/(1+exp((v+17)/(-12.5)))
-    betam =  35/(1+exp((v+99)/14.5))
+	alpham = 1.4/(1+exp((v+27)/(-12)))
+    betam =  0.49/(1+exp((v+30)/4))
 	taum=1/(Q10*(alpham+betam))
 	minf=alpham/(alpham+betam)
 
 	:h for inactivation kinetics
-	alphah = 0.0015/(1+exp((v+89)/8))
-    betah = 0.0055/(1+exp((v+83)/(-8)))
+	alphah = 0.0175/(1+exp((v+50)/8))
+    betah = 1.3/(1+exp((v+13)/(-10)))
 	tauh=1/(Q10*(alphah+betah))
 	hinf=alphah/(alphah+betah)
 }
