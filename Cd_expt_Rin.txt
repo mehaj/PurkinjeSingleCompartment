@@ -1,0 +1,21 @@
+Experiment: the input resistance measured in presence of ttx, tea and cadmium
+with cs gluconate internal solution
+
+Channels blocked: Na, all K, CaL, KCa, Ih 
+
+Input resistance:
+
+6.14
+7.04
+1.14
+5.9
+2.23
+5.18
+2.31
+2.17
+4.32
+1.01
+2.37
+
+
+

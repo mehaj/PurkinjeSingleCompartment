@@ -1,0 +1,225 @@
+
+nrncontrolmenu()
+
+//----------simulation parameters--------//
+tstop=2500 //ms
+dt=0.050 //
+steps_per_ms=20
+
+//---------passive proprties----------//
+rm      = 2000 //Rin=1.42 Gohms
+ra      = 150
+Cm      = 1
+v_init  = -45
+celsius = 27`
+ 
+//-------------define soma------------//
+create soma
+
+soma {
+	diam=6 //microns
+	L=6
+	Ra=150 
+	cm=1
+	nseg=1
+	insert pas
+	g_pas=1/rm //S.cm-2
+	e_pas=-70
+}
+
+access soma
+
+
+//-------------insert active conductances----------//
+/*
+insert NaF
+insert Kdr
+insert Ka
+insert CaL
+insert SK
+insert CaT
+
+gnabar_NaF=0
+gnabar_Kdr=0
+gkbar_Ka=0
+gcabar_CaL=0
+gcaba_CaT=0
+gkbar_SK=0
+
+ena=50
+ek=-70
+
+*/
+//need to add calcium concentration dynamics
+
+//--------------procedure to update values of model-------//
+proc update_init() {
+    
+    finitialize(v_init)
+    fcurrent()
+    }
+
+
+
+//------------------record input resistance----// 
+/*
+the procedure r_input provides three negative current pulses of duration 300 ms
+measures the mean steady state voltage (250 to 299ms)
+calculated the input resistance using applied current and resultat voltage change
+*/
+
+objref i_vec, v_vec, stdv, st, a, dv, Rinf1
+//strdef rinput, trace
+proc r_input () {
+
+    i_vec=new Vector(3) //current vector
+        stdv=new Vector(3)   //average voltage of current pulse
+        dv= new Vector(3)   //difference between basline and voltage corresponding to current pulse
+
+        //fitvec=new Vector(6)   //for fitting
+        a= new Vector(2)
+        Rinf1=new Vector(3)
+        Rinf1.x[0]=-8e-3
+        Rinf1.x[1]=-5e-3
+        Rinf1.x[2]=-2e-3
+        //tstop=500
+
+        //Rinf1=new File()
+
+        //print(rinput,"Parameters/rin_%d.txt",model)
+    //Rinf1.wopen(rinput)
+
+    
+    update_init()
+    count1=0
+    soma {
+                        
+                st=new IClamp(0.5)
+                for(i=0;i<=2; i+=1){
+                    st.dur=300
+                    st.del=100
+                    st.amp=Rinf1.x[i] //(i-10)/1000 //nA
+                    i_vec.x[i]=(i-10)/1000
+                    v_vec=new Vector(3) //voltage
+                    v_vec.record(&v(0.5))
+            
+                    
+                    finitialize(v_init)
+                    fcurrent()
+                    
+                    while (t < tstop){
+                        fadvance()
+                    }
+                    
+                    
+                    pulse=(v_vec.mean(4000,7000)) //take mean V between 100 to 250 ms
+                    stdv.set(i,pulse)
+                 
+                    
+                }
+                
+                dv=stdv.sub(v_init)
+                a=dv.div(i_vec)
+                resist=a.mean()
+                resist=resist*1e-3
+                print resist
+                //Rinf1.printf("%f\n",resist)
+                count1=count1+1
+                
+        
+    }
+
+    //Rinf1.close()
+    }
+
+/*
+//----------record membrane voltage with current clamp--------------//
+
+objref F1,st,v1
+strdef VOLTAGE
+
+proc recordtrace(){
+    
+    tstop = 10000
+    F1 = new File()
+    
+    v1 = new Vector()
+    v1.record(&soma.v(0.5))
+    
+    soma st = new IClamp(0.5)
+    
+    st.amp = 0
+    st.dur = 10000
+    st.del = 15
+    
+    update_init()
+    
+    while (t<tstop){
+        fadvance()
+    }
+    
+    sprint(VOLTAGE,"Parameters/VolTrace_%d.txt",model)         // replace 1 with model
+    F1.wopen(VOLTAGE)
+    v1.printf(F1,"%f\n")
+    F1.close()
+}
+
+//-------------measure IV relatioship-------------------//
+/*
+the procedure applies a single electrode clamp to the cell. 
+voltage pulse from -70 to +70 applied for 500 ms
+holding between this pulse is -65 mV
+the mean current between first 100 to 200 ms is calculated and saved as a file
+*/
+
+objref vc, curr_out, file2, volt, ipas
+strdef IVcurve
+
+curr_out=new Vector()
+ipas=new Vector()
+curr_out= new Vector(15)
+volt= new Vector(15)
+
+proc v_clamp() {
+    file2=new File()
+    sprint(IVcurve,"IVcurve.txt")         
+    file2.wopen(IVcurve)
+    for (i=0; i<=14; i+=1){
+
+    vc= new SEClamp (0.5)
+        vc.dur1= 1000 //ms
+        vc.dur2=500
+        vc.dur3= 1000
+
+        vc.amp1= -60 //mV
+        vc.amp2=(i-7)*10
+        vc.amp3= -60 
+
+        vc.rs= 50 //MOhm
+
+        volt.x[i]=(i-7)*10 //saves the holding vector as a file
+
+        ipas.record(&soma.i_pas(0.5))
+        //curr_out.x[i]= ipas.mean(22000,24000)
+        file2.printf("%f\t%f\n",volt.x[i], curr_out.x[i])
+
+        update_init()
+
+        //while (t<tstop){
+        //fadvance()
+
+
+    } //for loop
+    volt.printf()
+    print(ipas.size())
+    //curr_out.printf()
+
+
+
+    file2.close()
+} //procedure
+/*
+
+//---------------start the simulation-------------//
+r_input()
+//v_clamp()
