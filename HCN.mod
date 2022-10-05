@@ -42,7 +42,10 @@ BREAKPOINT {
 
 UNITSOFF
 
-INITIAL { n=ninf }
+INITIAL { 
+	rates (v) 
+	n=ninf 
+}
 
 DERIVATIVE states {
 	rates(v)

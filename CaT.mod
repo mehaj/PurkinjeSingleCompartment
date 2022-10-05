@@ -1,4 +1,4 @@
-TITLE Fast inactivating voltage gated potassium current
+TITLE Transient calcium current
 
 COMMENT 
 Kinetics adapted from model of Brown et al 2012
@@ -7,9 +7,9 @@ Mammalian model of Purkinje neuron
 ENDCOMMENT
 
 NEURON {
-	SUFFIX Ka
-	USEION k READ ek WRITE ik 
-	RANGE gkbar, gk, ik, minf, hinf, taum, tauh
+	SUFFIX CaT
+	USEION ca READ cai, cao WRITE ica 
+	RANGE gcabar, gca, ica, minf, hinf, taum, tauh
 }
 
 UNITS {
@@ -19,15 +19,17 @@ UNITS {
 }
 
 PARAMETER {
-	gkbar= 0.015 (S/cm2)
-	ek=-70 (mV)
+	gcabar= 0.0005 (S/cm2)
+	eca= 135 (mV)
+	cai=4e-5 (mM)
+	cao= 2.1 (mM)	 :based on external saline composition
 	celsius= 27 (degC)
 }
 
 ASSIGNED {
 	v (mV)
-	ik (mA/cm2)
-	gk (S/cm2)
+	ica (mA/cm2)
+	gca (S/cm2)
 	minf
 	hinf
 	taum
@@ -38,14 +40,14 @@ STATE { m h}
 
 BREAKPOINT {
 	SOLVE states METHOD cnexp
-	gk=gkbar*h*(m^4)
-	ik=gk*(v-ek)
+	gca=gcabar*m*h
+	ica=gca*(v-eca)
 }
 
 UNITSOFF
 
 INITIAL {
-	rates(v)
+	rates (v)
 	m=minf
 	h=hinf
 }
@@ -61,14 +63,14 @@ PROCEDURE rates (v) {
 	Q10=3^((celsius - 37)/10)
 
 	:m for activation kinetics
-	alpham = 1.4/(1+exp((v+27)/(-12)))
-    betam =  0.49/(1+exp((v+30)/4))
+	alpham = 2.6/(1+exp((v+21)/(-8)))
+    betam =  0.18/(1+exp((v+40)/4))
 	taum=1/(Q10*(alpham+betam))
 	minf=alpham/(alpham+betam)
 
 	:h for inactivation kinetics
-	alphah = 0.0175/(1+exp((v+50)/8))
-    betah = 1.3/(1+exp((v+13)/(-10)))
+	alphah = 0.0025/(1+exp((v+40)/8))
+    betah = 0.19/(1+exp((v+50)/(-10)))
 	tauh=1/(Q10*(alphah+betah))
 	hinf=alphah/(alphah+betah)
 }
