@@ -54,7 +54,7 @@ DERIVATIVE states {
 
 PROCEDURE rates (v) {
 	LOCAL alpha, beta, Q10
-	Q10=3^((celsius - 37)/10)
+	Q10=3^((celsius - 22)/10)
 
 	:n for activation kinetics
 	ninf = 1/(1+exp((v+90.1)/9.9))

@@ -59,6 +59,7 @@ DERIVATIVE states {
 
 PROCEDURE rates (v) {
 	LOCAL alpham, betam, alphah, betah, Q10
+	TABLE minf, taum, hinf, tauh DEPEND celsius FROM -400 TO 300 WITH 700
 	Q10=3^((celsius - 37)/10)
 
 	:m for activation kinetics

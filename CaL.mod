@@ -26,14 +26,14 @@ UNITS {
 } 
  
 PARAMETER { 
-    
-    gcabar=0.003 (S/cm2)
+ 
+    gcabar=0.005
 	
 } 
 
 ASSIGNED {
 	v (mV)
-    cai (mM)
+    cai(mM)
     cao (mM)     
 	ica (mA/cm2) 
 	minf (1)
@@ -65,21 +65,17 @@ DERIVATIVE states {
 } 
 
 PROCEDURE rate(v(mV)) {
-    LOCAL Q10
+	LOCAL Q10
 	TABLE minf, taum FROM -150 TO 100 WITH 300
-    Q10=3^((celsius - 37)/10)
-    minf = 1 / (1 + exp((v - (-34)) / -9))
-    taum = (1 / ((31.746 * ((exp((v - 5) / -13.89) + 1) ^ -1)) + (3.97e-4 * (v + 8.9)) * ((exp((v + 8.9) / 5) - 1) ^ -1)))/Q10
-    :taum = taum / qdeltat
+	Q10=3^((celsius-37)/10)
+    minf = 1 / (1 + exp((v +34) / -9))
+    taum =1 / ((31.746 * ((exp((v - 5) / -13.89) + 1) ^ -1)) + (3.97e-4 * (v + 8.9)) * ((exp((v + 8.9) / 5) - 1) ^ -1))
+    taum = taum / Q10
 } 
 
 FUNCTION getGHKexp(v(mV)) {
     TABLE DEPEND T FROM -150 TO 100 WITH 300 
-    getGHKexp = exp(-23.20764929 * v / T): =the calculated values of
-            : getGHKexp = exp((-z * F * (0.001) * v) / (R * T)).
+    getGHKexp = exp(-23.20764929 * v / T)
 }
-
-
-
 
 
